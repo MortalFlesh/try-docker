@@ -1,0 +1,27 @@
+version: '3'
+services:
+  app:
+    build: .
+    #restart: always
+    environment:
+      DB_HOST: 'pgmovies'
+      DB_PORT: '5432'
+      DB_NAME: movies
+      DB_USER: movies
+      DB_PASS: movies
+    networks:
+      - dbapp
+    depends_on:
+      - pgmovies
+  
+  pgmovies:
+    build: database
+    #restart: always
+    networks:
+      - dbapp
+    #ports:
+    #  - "6000:5432"
+
+networks:
+  dbapp:
+    driver: bridge
