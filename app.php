@@ -1,5 +1,43 @@
 <?php
 
+writeln('===========================');
+writeln('.......... Start ..........');
+
+$query = query(connect(...readEnv('DB_', 'NAME', 'HOST', 'PORT', 'USER', 'PASS')));
+$fetch = fetchAll($query);
+
+tryDo(function () use ($query) {
+    writeln('creating db...');
+    $query('
+        CREATE TABLE movie (
+            id SERIAL NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            PRIMARY KEY(id)
+        )
+    ');
+    writeln('db is created');
+});
+
+tryDo(function () use ($query) {
+    writeln('inserting movies...');
+    $query("INSERT INTO movie (name) VALUES ('Kill Bill'), ('Kill Bill 2')");
+    writeln('movies are inserted');
+});
+
+tryDo(function () use ($fetch) {
+    writeln('reading movies ...');
+    $movies = array_map(function (array $movie) {
+        return sprintf('%s | %s', $movie['id'], $movie['name']);
+    }, $fetch('SELECT * FROM movie'));
+
+    foreach($movies as $movie) {
+        writeln('- %s', $movie);
+    }
+});
+
+writeln('.......... END ..........');
+writeln('=========================');
+
 function readEnv(string $prefix, string ...$keys): array
 {
     return array_map(function (string $key) use ($prefix) {
@@ -64,41 +102,3 @@ function tryDo(callable $do, int $waitFor = 1000)
     }
     usleep($waitFor * 1000);
 }
-
-writeln('===========================');
-writeln('.......... Start ..........');
-
-$query = query(connect(...readEnv('DB_', 'NAME', 'HOST', 'PORT', 'USER', 'PASS')));
-$fetch = fetchAll($query);
-
-tryDo(function () use ($query) {
-    writeln('creating db...');
-    $query('
-        CREATE TABLE movie (
-            id SERIAL NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            PRIMARY KEY(id)
-        )
-    ');
-    writeln('db is created');
-});
-
-tryDo(function () use ($query) {
-    writeln('inserting movies...');
-    $query("INSERT INTO movie (name) VALUES ('Kill Bill'), ('Kill Bill 2')");
-    writeln('movies are inserted');
-});
-
-tryDo(function () use ($fetch) {
-    writeln('reading movies ...');
-    $movies = array_map(function (array $movie) {
-        return sprintf('%s | %s', $movie['id'], $movie['name']);
-    }, $fetch('SELECT * FROM movie'));
-
-    foreach($movies as $movie) {
-        writeln('- %s', $movie);
-    }
-});
-
-writeln('.......... END ..........');
-writeln('=========================');
